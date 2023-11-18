@@ -21,6 +21,14 @@ export class Todos extends Component {
     }));
   };
 
+  handelChangedText = (idx, newText) => {
+    this.setState(({ todos }) => ({
+      todos: todos.map(todo => {
+        return todo.id === idx ? { ...todo, text: newText } : todo;
+      }),
+    }));
+  };
+
   render() {
     console.log(this.state.todos);
     const { todos } = this.state;
@@ -35,6 +43,7 @@ export class Todos extends Component {
                 count={index + 1}
                 id={id}
                 onDeleteClick={this.handleDeleteTodo}
+                onChange={this.handelChangedText}
               />
             </GridItem>
           ))}
