@@ -8,14 +8,26 @@ export class Gallery extends Component {
     query: '',
     page: 1,
     photos: null,
+    loading: false,
+    isVisibleBtn: false,
   };
 
   getImages = async () => {
     const { query, page } = this.state;
+    this.setState({ loading: true });
     try {
       const dataImages = await ImageService.getImages(query, page);
-      this.setState({ photos: dataImages.photos });
-    } catch (error) {}
+      this.setState(prevState => ({
+        photos: prevState.photos
+          ? [...prevState.photos, ...dataImages.photos]
+          : dataImages.photos,
+        isVisibleBtn:
+          page < Math.ceil(dataImages.total_results / dataImages.per_page),
+      }));
+    } catch (error) {
+    } finally {
+      this.setState({ loading: false });
+    }
   };
 
   componentDidUpdate(prevProps, prevState) {
@@ -28,11 +40,15 @@ export class Gallery extends Component {
   }
 
   handleFormSubmit = query => {
-    this.setState({ query });
+    this.setState({ query, photos: null, page: 1, isVisibleBtn: false });
+  };
+
+  onBtnLoadMoreClick = () => {
+    this.setState(prevState => ({ page: prevState.page + 1 }));
   };
 
   render() {
-    const { photos } = this.state;
+    const { photos, loading, isVisibleBtn } = this.state;
     return (
       <>
         <SearchForm onSubmit={this.handleFormSubmit} />
@@ -49,6 +65,11 @@ export class Gallery extends Component {
             })}
         </Grid>
         {/* <Text textAlign="center">Sorry. There are no images ... 😭</Text> */}
+        {isVisibleBtn && (
+          <Button type="button" onClick={this.onBtnLoadMoreClick}>
+            {loading ? 'Loading...' : 'Load more'}
+          </Button>
+        )}
       </>
     );
   }
